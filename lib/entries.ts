@@ -4,17 +4,31 @@ import type { PendingDay, PendingTask, RunningTimer } from "./types";
 
 type Status = "pending" | "pushed" | "discarded";
 
-// Saves a finished timer run. It belongs to the day it started on.
+// Saves a finished timer run. It belongs to the day it started on, and is merged into any pending
+// run of the same task + log type on that day (the earliest keeps its start time and takes the sum).
 export function addEntry(userId: string, t: RunningTimer, endedAt: Date): { day: string; seconds: number } {
   const started = new Date(t.startedAt);
   const seconds = Math.max(1, Math.round((endedAt.getTime() - started.getTime()) / 1000));
   const day = localDay(started);
-  db()
+  const d = db();
+  d.exec("BEGIN");
+  d.prepare(
+    `INSERT INTO entries (user_id, work_item_id, title, project, task_type, parent_title, log_type, day, started_at, seconds, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(userId, t.workItemId, t.title, t.project, t.taskType, t.parentTitle, t.logType, day, t.startedAt, seconds, new Date().toISOString());
+  const rows = d
     .prepare(
-      `INSERT INTO entries (user_id, work_item_id, title, project, task_type, parent_title, log_type, day, started_at, seconds, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      "SELECT id, seconds FROM entries WHERE user_id = ? AND day = ? AND work_item_id = ? AND COALESCE(log_type, '') = ? AND status = 'pending' ORDER BY started_at, id",
     )
-    .run(userId, t.workItemId, t.title, t.project, t.taskType, t.parentTitle, t.logType, day, t.startedAt, seconds, new Date().toISOString());
+    .all(userId, day, t.workItemId, t.logType ?? "") as { id: number; seconds: number }[];
+  if (rows.length > 1) {
+    const total = rows.reduce((sum, r) => sum + r.seconds, 0);
+    d.prepare("UPDATE entries SET seconds = ?, title = ?, project = ?, task_type = ?, parent_title = ? WHERE id = ?").run(
+      total, t.title, t.project, t.taskType, t.parentTitle, rows[0].id,
+    );
+    for (const { id } of rows.slice(1)) d.prepare("DELETE FROM entries WHERE id = ?").run(id);
+  }
+  d.exec("COMMIT");
   return { day, seconds };
 }
 
