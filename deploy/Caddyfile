@@ -1,0 +1,4 @@
+# Replace with your real domain. Caddy gets and renews the HTTPS certificate automatically.
+timelog.example.com {
+	reverse_proxy 127.0.0.1:3000
+}
