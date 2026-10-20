@@ -113,7 +113,7 @@ export function PushDialog({ day, tasks, logTypes, mapping, onClose, onPushed }:
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <Title>{r.task.title}</Title>
-                    <div className="text-xs text-muted">#{r.task.workItemId} · {r.task.taskType ?? "no task type"}</div>
+                    <div className="text-xs text-muted">#{r.task.workItemId} · {r.task.taskType ?? "no task type"}{r.task.parentTitle && ` · ${r.task.parentTitle}`}</div>
                   </div>
                   {r.primary && (
                     <label className="flex shrink-0 items-center gap-1 text-xs text-muted">

@@ -144,7 +144,10 @@ export function History({ userName }: { userName: string }) {
                   <ul className="mt-2 space-y-1">
                     {waiting.tasks.map((t) => (
                       <li key={`${t.workItemId}|${t.logType ?? ""}`} className="flex items-center gap-3">
-                        <div className="min-w-0 flex-1"><Title>{t.title}</Title></div>
+                        <div className="min-w-0 flex-1">
+                          <Title>{t.title}</Title>
+                          {t.parentTitle && <div className="truncate text-xs text-muted">{t.parentTitle}</div>}
+                        </div>
                         <span className="text-xs text-muted">{t.logType ?? "no log type"}</span>
                         <span className="font-mono text-xs">{formatMinutes(secondsToMinutes(t.seconds))}</span>
                       </li>

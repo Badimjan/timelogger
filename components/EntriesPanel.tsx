@@ -77,7 +77,7 @@ function TrackedRow({ task, onEdit, onDelete }: { task: PendingTask; onEdit: Pro
     <li className="flex items-center gap-3 px-4 py-2">
       <div className="min-w-0 flex-1">
         <Title>{task.title}</Title>
-        <div className="text-xs text-muted">#{task.workItemId} · {task.logType ?? "no log type"}</div>
+        <div className="text-xs text-muted">#{task.workItemId} · {task.logType ?? "no log type"}{task.parentTitle && ` · ${task.parentTitle}`}</div>
       </div>
       <DurationInput minutes={value} onChange={setValue} onCommit={commit} />
       <button onClick={() => onDelete(task)} title="Delete tracked time" className="text-muted hover:text-danger">✕</button>
