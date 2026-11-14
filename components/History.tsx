@@ -6,12 +6,17 @@ import { addDays, daysBetween, localDay } from "@/lib/day";
 import { formatMinutes, secondsToMinutes } from "@/lib/minutes";
 import type { LogType, Mapping, PendingDay, TimeLog } from "@/lib/types";
 import { AppHeader } from "./AppHeader";
+import { JalaliDateInput } from "./JalaliDateInput";
 import { LogList } from "./LogList";
 import { PushDialog } from "./PushDialog";
 import { Title } from "./Title";
 
-const dayLabel = (day: string) =>
-  new Date(`${day}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "short", day: "numeric" });
+const dayLabel = (day: string) => {
+  const d = new Date(`${day}T12:00:00`);
+  const greg = d.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "short", day: "numeric" });
+  const fa = d.toLocaleDateString("fa-IR-u-ca-persian", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  return `${greg} · ${fa}`;
+};
 
 const dateInput = "rounded-md border border-border bg-panel px-2 py-1 text-sm";
 const chip = "rounded-md border border-border px-3 py-1 text-sm hover:bg-panel";
@@ -106,9 +111,9 @@ export function History({ userName }: { userName: string }) {
       <main className="mx-auto w-full max-w-4xl space-y-4 p-6">
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={() => shift(-1)} className={chip} aria-label="Earlier">‹</button>
-          <input type="date" value={from} max={to} onChange={(e) => e.target.value && setFrom(e.target.value)} className={dateInput} aria-label="From" />
+          <JalaliDateInput value={from} max={to} onChange={setFrom} className={dateInput} label="From" />
           <span className="text-muted">→</span>
-          <input type="date" value={to} min={from} max={today} onChange={(e) => e.target.value && setTo(e.target.value)} className={dateInput} aria-label="To" />
+          <JalaliDateInput value={to} min={from} max={today} onChange={setTo} className={dateInput} label="To" />
           <button onClick={() => shift(1)} disabled={to >= today} className={`${chip} disabled:opacity-40`} aria-label="Later">›</button>
           <span className="mx-2 h-5 w-px bg-border" />
           <button onClick={() => preset(today, today)} className={chip}>Today</button>
